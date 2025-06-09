@@ -1,22 +1,39 @@
 #pragma once
 
 #include <vector>
+#include <array>
+#include <span>
 #include <math.h>
 
-class ImagePGM
+/**
+ * @brief Represents a discrete convex Extended Gaussian Image (EGI).
+ *
+ * A discrete EGI is a set of surface normals, each represented as a 4D vector. The first three components (x, y, z)
+ * specify the direction of the surface normal. The fourth component is a weight associated with that normal.
+ *
+ * A valid discrete EGI forms a discrete probability distribution over the unit sphere:
+ * - All weights are non-negative.
+ * - The sum of all weights equals 1.
+ *
+ */
+struct discrete_egi_t
 {
-
-public:
-    std::vector<std::vector<int>> data;
-    int width;
-    int height;
-    int maxValue;
-
-    ImagePGM(std::vector<std::vector<int>>, int, int, int);
+    /// Surface normals with weights; stored as [x, y, z, weight].
+    std::vector<std::array<double, 4>> normals;
 };
 
-ImagePGM read_pgm(char *);
-void write_pgm(ImagePGM *);
-void rescale_greyvalues(ImagePGM *, int);
-void construct_egi(ImagePGM *, std::vector<std::vector<double>> &, std::vector<double> &, unsigned numValues);
-void normalize3(std::vector<double> &);
+/**
+ * @brief Converts an image to a convex, discrete EGI (Extended Gaussian Image) representation.
+ *
+ * This function processes an input image with the given width and height, using its pixel values (e.g. grayscale
+ * intensities) to generate surface orientation information stored in a discrete EGI format.
+ *
+ * @param width Width of the input image in pixels.
+ * @param height Height of the input image in pixels.
+ * @param pixels A flat array of pixel data (e.g. grayscale or luminance values), ordered row-major.
+ *
+ * @return A discrete_egi structure containing the resulting convex surface normals.
+ *
+ * @note The input vector should contain exactly (width * height) elements.
+ */
+discrete_egi_t make_convex_egi(uint32_t width, uint32_t height, std::span<float> pixels);

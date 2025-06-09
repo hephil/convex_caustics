@@ -1,5 +1,8 @@
-#include "globals.hpp"
+#include "common.hpp"
 #include "little.hpp"
+
+static const double EPSILON = 1e-9;
+static const bool VERBOSE = false;
 
 typedef CGAL::Exact_predicates_inexact_constructions_kernel Kernel;
 typedef Kernel::Point_3 Point;
@@ -357,16 +360,16 @@ int little(std::vector<double> &L, ErrorFunction ef)
 
         std::vector<double> A_G = ef.A_G;
 
-        if (VERBOSE)
-        {
-            std::cout << "\nL:   ";
-            print_vector(L);
-            std::cout << "\nG(L):";
-            print_vector(G_L);
-            std::cout << "\nA_G: ";
-            print_vector(A_G);
-            std::cout << '\n';
-        }
+        // if (VERBOSE)
+        // {
+        //     std::cout << "\nL:   ";
+        //     print_vector(L);
+        //     std::cout << "\nG(L):";
+        //     print_vector(G_L);
+        //     std::cout << "\nA_G: ";
+        //     print_vector(A_G);
+        //     std::cout << '\n';
+        // }
 
         optimization_step(A_G, G_L, L, current, k, ef);
         k++;

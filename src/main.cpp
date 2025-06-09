@@ -1,6 +1,7 @@
 #include "egi.hpp"
-#include "globals.hpp"
+#include "common.hpp"
 #include "little.hpp"
+#include "pgm.hpp"
 
 #include <cstdlib>
 #include <fstream>
@@ -14,96 +15,23 @@ using std::ofstream;
 using std::string;
 using std::vector;
 
-bool VERBOSE = false;
-unsigned CAUSTIC_SIZE = 100; // 10x10mm
-unsigned PIXEL_SIZE = 10;    // 1x1mmm
-unsigned DISTANCE = 1000;    // 1000mm
-unsigned NUM_GREYVALUES = 64;
 char *FILENAME = NULL;
 
 void usage()
 {
     cout
         << "usage:\n"
-           "convcaust FILENAME.pgm\n output"
-           "Options:\n"
-           "    -v:    verbose\n"
-           "    -d N:  distance between Wall and caustic\n"
-           "    -c N:  Area of resulting caustic in mm²\n"
-           "    -p N:  Area of a pixel in the projected image in mm²\n"
-           "    -g N:  Number of greyvalues the projected image should have\n";
+           "convcaust input.pgm output.off\n";
     exit(0);
 }
 
 int main(int argc, char **argv)
 {
-    bool testing = false;
 
     if (argc < 3)
         usage(); // exits
 
     FILENAME = argv[argc - 1];
-
-    for (int i = 1; i < argc - 2; i++)
-    {
-        if (!strcmp(argv[i], "-v"))
-        {
-            VERBOSE = true;
-            continue;
-        }
-        if (!strcmp(argv[i], "-c"))
-        {
-            if (i + 2 >= argc)
-                usage(); // exits
-            long buf = strtol(argv[++i], NULL, 10);
-            if (errno || buf <= 0)
-                usage(); // exits
-            CAUSTIC_SIZE = (unsigned)buf;
-            continue;
-        }
-        if (!strcmp(argv[i], "-p"))
-        {
-            if (i + 2 >= argc)
-                usage(); // exits
-            long buf = strtol(argv[++i], NULL, 10);
-            if (errno || buf <= 0)
-                usage(); // exits
-            PIXEL_SIZE = (unsigned)buf;
-            continue;
-        }
-        if (!strcmp(argv[i], "-d"))
-        {
-            if (i + 2 >= argc)
-                usage(); // exits
-            long buf = strtol(argv[++i], NULL, 10);
-            if (errno || buf <= 0)
-                usage(); // exits
-            DISTANCE = (unsigned)buf;
-            continue;
-        }
-        if (!strcmp(argv[i], "-g"))
-        {
-            if (i + 2 >= argc)
-                usage(); // exits
-            long buf = strtol(argv[++i], NULL, 10);
-            if (errno || buf <= 0)
-                usage(); // exits
-            NUM_GREYVALUES = (unsigned)buf;
-            continue;
-        }
-        if (!strcmp(argv[i], "-t"))
-        {
-            testing = true;
-            continue;
-        }
-        usage(); // exits
-    }
-
-    if (testing)
-    {
-        test_little();
-        return 0;
-    }
 
     int i = 0;
     int pos = -1;
@@ -128,16 +56,21 @@ int main(int argc, char **argv)
         return -1;
     }
 
-    ImagePGM image = read_pgm(argv[argc - 2]);
-
-    rescale_greyvalues(&image, NUM_GREYVALUES);
-
-    write_pgm(&image);
+    // read input file
+    image_t img = read_pgm_file(argv[argc - 2]);
 
     // construct EGI (Extended Gaussian Image)
+    discrete_egi_t egi = make_convex_egi(img.width, img.height, img.pixels);
+
+    // transform format
     vector<vector<double>> n;
     vector<double> A;
-    construct_egi(&image, n, A, NUM_GREYVALUES);
+    n.resize(egi.normals.size());
+    for (size_t i = 0; i < egi.normals.size(); i++)
+        n[i] = std::vector<double>({ egi.normals[i][0], egi.normals[i][1], egi.normals[i][2] });
+
+    A.resize(egi.normals.size());
+    for (size_t i = 0; i < A.size(); i++) A[i] = egi.normals[i][3];
 
     // start-values
     vector<double> x;

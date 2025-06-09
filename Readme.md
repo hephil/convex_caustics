@@ -11,6 +11,13 @@ The program performs three steps to compute a convec lense from a greyscale pict
 2. Optimise the shape of a convex Polytope to match the target normal distribution using [4].
 3. Transform the convex Polytope from a half-space representation (H-description) into a vertex representation (V-description) and output the geometry to a file.
 
+### Limitations
+
+The method makes some simplifying assumptions and approximations. Among others:
+- The light source is assumed to be directional. This leads to each pixel of the image appearing as a dot in the projected image, rather than filling out the image when the lens is lit by a small light source like a phone flash.
+- A simplified refraction calculation is used to compute the surface distribution that determines the shape. This leads to some warping of the final image.
+- Fresnel reflectivity and 2nd order light interactions are ignored. This leads to some minor stray lights.
+
 ## Build Instructions
 
 Requirements:
@@ -35,6 +42,7 @@ then simply build the repository with
 Once built, the resulting binary can be used like this:
 
 ./convcaust input.pgm output.off
+
 
 ## Examples
 
