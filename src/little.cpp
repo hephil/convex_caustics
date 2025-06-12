@@ -21,7 +21,6 @@ using Facet = Polyhedron::Facet;
 using Halfedge_facet_circulator = Polyhedron::Halfedge_around_facet_circulator;
 
 static const double EPSILON = 1e-9;
-static const bool VERBOSE = false;
 static const Point O = { 0.0, 0.0, 0.0 }; // origin
 
 Polyhedron compute_caustic(std::span<std::array<double, 3>> normals, std::span<double> areas)
@@ -35,6 +34,8 @@ Polyhedron compute_caustic(std::span<std::array<double, 3>> normals, std::span<d
     // 1) initialize halfspaces with distance 1 from the origin.
     std::vector<double> L(normals.size(), 1.0);
     std::vector<double> G_L(normals.size(), 0.0);
+    std::vector<double> best_L(normals.size(), 1.0);
+    std::vector<double> best_G_L(normals.size(), 0.0);
     std::vector<Plane> h_desc(L.size());
     Polyhedron p;
     std::vector<Point> points;
@@ -49,7 +50,9 @@ Polyhedron compute_caustic(std::span<std::array<double, 3>> normals, std::span<d
 
     unsigned long k = 0;
     double previous_error = DBL_MAX;
+    double best_error = DBL_MAX;
     double current_error = DBL_MAX;
+    double gamma = 1.0;
 
     while (true)
     {
@@ -166,16 +169,30 @@ Polyhedron compute_caustic(std::span<std::array<double, 3>> normals, std::span<d
         // 4) Evaluate f(L);
         previous_error = current_error;
         current_error = 0.0;
-        for (unsigned i = 0; i < L.size(); i++) current_error += L[i] * areas[i];
+        for (size_t i = 0; i < L.size(); i++) current_error += L[i] * areas[i];
 
         // 4) if the decrease in f is less than a pre-specified value, terminate.
-        if (previous_error - current_error < EPSILON)
-            break;
+        if (current_error < best_error)
+        {
+            if (best_error - current_error < EPSILON)
+                break;
+            best_error = current_error;
+            for (size_t i = 0; i < L.size(); i++) best_L[i] = L[i];
+            for (size_t i = 0; i < G_L.size(); i++) best_G_L[i] = G_L[i];
+            gamma *= 1.1;
+        }
+        else
+        {
+            best_error = current_error;
+            for (size_t i = 0; i < L.size(); i++) L[i] = best_L[i];
+            for (size_t i = 0; i < G_L.size(); i++) G_L[i] = best_G_L[i];
+            gamma *= 0.5;
+        }
 
         // 4) Otherwise, compute a step using equation (3), update L, and repeat, starting at step 2.
         double GdotA = 0.0;
         double area_error = 0.0;
-        for (unsigned i = 0; i < L.size(); i++)
+        for (size_t i = 0; i < L.size(); i++)
         {
             GdotA += areas[i] * G_L[i];
             area_error += (areas[i] - G_L[i]) * (areas[i] - G_L[i]);
@@ -185,16 +202,15 @@ Polyhedron compute_caustic(std::span<std::array<double, 3>> normals, std::span<d
         // This step is a multiple of: <A,G(L)>G(L) - A , where <x,y> is the inner product
         for (unsigned i = 0; i < L.size(); i++)
         {
-            double gamma = 1.0 - GdotA;
             double stepping = GdotA * G_L[i] - areas[i];
-            L[i] = L[i] + (stepping * gamma);
+            L[i] = std::max(EPSILON, L[i] + (stepping * gamma));
         }
 
-        if (k % 1000 == 0)
+        if (k % 10 == 0)
         {
-            std::ofstream out(std::format("iter{}.off", k));
-            if (out.is_open())
-                out << p;
+            // std::ofstream out(std::format("iter{}.off", k));
+            // if (out.is_open())
+            //     out << p;
             if (logfile.is_open())
                 logfile << std::format("{},{}", k, area_error) << std::endl;
         }
