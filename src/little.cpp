@@ -23,13 +23,13 @@ using Halfedge_facet_circulator = Polyhedron::Halfedge_around_facet_circulator;
 static const double EPSILON = 1e-9;
 static const Point O = { 0.0, 0.0, 0.0 }; // origin
 
-Polyhedron compute_caustic(std::span<std::array<double, 3>> normals, std::span<double> areas)
+Polyhedron compute_caustic(std::span<std::array<double, 3>> normals, std::span<double> areas, const char *filename)
 {
     Assert(normals.size() == areas.size(), "Invalid Extended Gaussian Image");
 
-    std::ofstream logfile("iterations.log");
-    if (logfile.is_open())
-        logfile << "Iteration,Error" << std::endl;
+    // std::ofstream logfile("iterations.log");
+    // if (logfile.is_open())
+    //     logfile << "Iteration,Error" << std::endl;
 
     // 1) initialize halfspaces with distance 1 from the origin.
     std::vector<double> L(normals.size(), 1.0);
@@ -186,7 +186,7 @@ Polyhedron compute_caustic(std::span<std::array<double, 3>> normals, std::span<d
             best_error = current_error;
             for (size_t i = 0; i < L.size(); i++) L[i] = best_L[i];
             for (size_t i = 0; i < G_L.size(); i++) G_L[i] = best_G_L[i];
-            gamma *= 0.5;
+            gamma = std::max(DBL_EPSILON, 0.5 * gamma);
         }
 
         // 4) Otherwise, compute a step using equation (3), update L, and repeat, starting at step 2.
@@ -206,13 +206,13 @@ Polyhedron compute_caustic(std::span<std::array<double, 3>> normals, std::span<d
             L[i] = std::max(EPSILON, L[i] + (stepping * gamma));
         }
 
-        if (k % 10 == 0)
+        if (k % 100 == 0)
         {
-            // std::ofstream out(std::format("iter{}.off", k));
-            // if (out.is_open())
-            //     out << p;
-            if (logfile.is_open())
-                logfile << std::format("{},{}", k, area_error) << std::endl;
+            std::ofstream out(filename);
+            if (out.is_open())
+                out << p;
+            // if (logfile.is_open())
+            //     logfile << std::format("{},{}", k, area_error) << std::endl;
         }
         std::cout
             << std::format("Iteration {}, Error: {}, Delta: {}", k, area_error, previous_error - current_error)

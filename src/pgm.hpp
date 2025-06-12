@@ -2,6 +2,7 @@
 
 #include "common.hpp"
 
+#include <format>
 #include <iostream>
 #include <fstream>
 
@@ -24,7 +25,11 @@ inline image_t read_pgm_file(const char *filename)
 
     // Open file
     std::ifstream inputFile(filename);
-    ReleaseAssert(inputFile.is_open(), "Unable to open image\n");
+    if (!inputFile.is_open())
+    {
+        std::cout << std::format("unable to open file {}\n", filename);
+        return img;
+    }
 
     // Read type of PGM
     std::string type;

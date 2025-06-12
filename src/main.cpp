@@ -16,7 +16,6 @@ void usage()
 
 int main(int argc, char **argv)
 {
-
     if (argc < 3)
         usage(); // exits
 
@@ -46,11 +45,14 @@ int main(int argc, char **argv)
     // read input file
     image_t img = read_pgm_file(argv[argc - 2]);
 
+    if (img.width == 0 || img.height == 0)
+        usage();
+
     // construct EGI (Extended Gaussian Image)
     discrete_egi_t egi = make_convex_egi(img.width, img.height, img.pixels);
 
     // compute lens
-    auto result_mesh = compute_caustic(egi.normals, egi.areas);
+    auto result_mesh = compute_caustic(egi.normals, egi.areas, argv[argc - 1]);
 
     // write lens
     std::ofstream out(argv[argc - 1]);

@@ -5,7 +5,6 @@
 #include <math.h>
 #include <span>
 
-
 #include <CGAL/Polyhedron_3.h>
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 
@@ -18,10 +17,12 @@
  *
  * @param normals A span of 3D vectors representing the directions of the polytope's facets.
  * @param areas A span of doubles specifying the area of each corresponding facet.
+ * @param filename A filename to which the resulting polytope is written in case the optimization is terminated
+ * prematurely.
  *
  * @return A triangulated convex polytope represented as a CGAL Polyhedron.
  *
  * @note The sizes of the normals and areas spans must match.
  */
 CGAL::Polyhedron_3<CGAL::Exact_predicates_inexact_constructions_kernel>
-compute_caustic(std::span<std::array<double, 3>> normals, std::span<double> areas);
+compute_caustic(std::span<std::array<double, 3>> normals, std::span<double> areas, const char *filename);
