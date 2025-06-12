@@ -167,10 +167,10 @@ Polyhedron compute_caustic(std::span<std::array<double, 3>> normals, std::span<d
         for (auto &g : G_L) g /= len;
 
         // 4) Evaluate f(L);
-        previous_error = current_error;
         current_error = 0.0;
         for (size_t i = 0; i < L.size(); i++) current_error += L[i] * areas[i];
 
+        previous_error = best_error;
         // 4) if the decrease in f is less than a pre-specified value, terminate.
         if (current_error < best_error)
         {
@@ -214,9 +214,13 @@ Polyhedron compute_caustic(std::span<std::array<double, 3>> normals, std::span<d
             // if (logfile.is_open())
             //     logfile << std::format("{},{}", k, area_error) << std::endl;
         }
-        std::cout
-            << std::format("Iteration {}, Error: {}, Delta: {}", k, area_error, previous_error - current_error)
-            << "\t\r" << std::flush;
+        std::cout << std::format(
+            "Iteration {:>6}, Error: {:>12.4e}, Delta: {:>12.4e}",
+            k,
+            area_error,
+            previous_error - current_error
+        ) << "\t\t\r"
+                  << std::flush;
         k++;
     }
 
