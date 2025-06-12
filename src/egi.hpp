@@ -11,15 +11,13 @@
  * A discrete EGI is a set of surface normals, each represented as a 4D vector. The first three components (x, y, z)
  * specify the direction of the surface normal. The fourth component is a weight associated with that normal.
  *
- * A valid discrete EGI forms a discrete probability distribution over the unit sphere:
- * - All weights are non-negative.
- * - The sum of all weights equals 1.
- *
  */
 struct discrete_egi_t
 {
-    /// Surface normals with weights; stored as [x, y, z, weight].
-    std::vector<std::array<double, 4>> normals;
+    /// Surface normals; stored as [x, y, z].
+    std::vector<std::array<double, 3>> normals;
+    /// Surface normal weights
+    std::vector<double> areas;
 };
 
 /**

@@ -3,8 +3,6 @@
 #include <iostream>
 #include <string>
 
-extern char *FILENAME;
-
 /**
  * @brief Represents a greyscale image with linear brightness values in row-major order in a float pixel array.
  */
@@ -22,7 +20,7 @@ struct image_t
  * @brief Transforms a colour value in sRGB colour space into linear colour space.
  *
  * @param c Colour value in sRGB colour space.
- * 
+ *
  * @return Colour value in linear colour space.
  */
 inline float srgb_to_linear(float c)

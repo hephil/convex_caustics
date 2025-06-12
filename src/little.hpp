@@ -1,46 +1,27 @@
 #pragma once
 
-#include <vector>
 #include <assert.h>
 #include <float.h>
 #include <math.h>
+#include <span>
 
-#include <CGAL/Cartesian.h>
-#include <CGAL/Convex_hull_3/dual/halfspace_intersection_with_constructions_3.h>
-#include <CGAL/Polygon_mesh_processing/triangulate_faces.h>
-#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
+
 #include <CGAL/Polyhedron_3.h>
-#include <CGAL/Surface_mesh.h>
-#include <CGAL/convex_hull_3.h>
+#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 
-
-class ErrorFunction
-{
-    std::vector<CGAL::Exact_predicates_inexact_constructions_kernel::Vector_3> n;
-
-public:
-    std::vector<double> A_G;
-
-    ErrorFunction(std::vector<std::vector<double>>, std::vector<double>);
-
-    std::vector<CGAL::Exact_predicates_inexact_constructions_kernel::Plane_3> halfspaces(std::vector<double>);
-    double f(std::vector<double> x);
-    std::vector<double> G(CGAL::Polyhedron_3<CGAL::Exact_predicates_inexact_constructions_kernel>);
-};
-
-void print_vector(std::vector<double>);
-CGAL::Polyhedron_3<CGAL::Exact_predicates_inexact_constructions_kernel> construct_polytope(
-    std::vector<CGAL::Exact_predicates_inexact_constructions_kernel::Plane_3>
-);
-void test_polytope();
-CGAL::Exact_predicates_inexact_constructions_kernel::Point_3 compute_centroid(
-    CGAL::Polyhedron_3<CGAL::Exact_predicates_inexact_constructions_kernel>
-);
-double compute_volume(
-    CGAL::Polyhedron_3<CGAL::Exact_predicates_inexact_constructions_kernel>,
-    CGAL::Exact_predicates_inexact_constructions_kernel::Point_3
-);
-double vector_length(std::vector<double> &);
-void scale_vector(std::vector<double> &, double);
-int little(std::vector<double> &, ErrorFunction);
-void test_little();
+/**
+ * @brief Computes a convex polytope matching an extended Gaussian image.
+ *
+ * This function reconstructs a convex polytope whose facet normals and areas correspond to an extended Gaussian image,
+ * as described in Little, James J. "An iterative method for reconstructing convex polyhedra from extended Gaussian
+ * images." https://dl.acm.org/doi/proceedings/10.5555/2886844
+ *
+ * @param normals A span of 3D vectors representing the directions of the polytope's facets.
+ * @param areas A span of doubles specifying the area of each corresponding facet.
+ *
+ * @return A triangulated convex polytope represented as a CGAL Polyhedron.
+ *
+ * @note The sizes of the normals and areas spans must match.
+ */
+CGAL::Polyhedron_3<CGAL::Exact_predicates_inexact_constructions_kernel>
+compute_caustic(std::span<std::array<double, 3>> normals, std::span<double> areas);
