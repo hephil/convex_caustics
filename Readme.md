@@ -32,7 +32,7 @@ Then simply build the repository with:
 
     mkdir build/
     cd build
-    cmake ..
+    cmake -DCMAKE_TOOLCHAIN_FILE="path/to/vcpkg/scripts/buildsystems/vcpkg.cmake" ..
     cmake --build .
 
 ## Usage
