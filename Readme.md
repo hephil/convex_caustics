@@ -14,7 +14,7 @@ The program performs three steps to compute a convex lens from a greyscale pictu
 
 The method makes some simplifying assumptions and approximations. Among others:
 - The light source is assumed to be directional. This causes each pixel of the image to appear as a dot in the projected image, rather than filling out the image when the lens is lit by a small light source like a phone flash.
-- A simplified refraction calculation is used to compute the surface distribution that determines the shape. This leads to some warping of the final image.
+- A fixed distance between lense and wall is assumed. This leads to some warping of the final image when not at the same ratio of lense size and distance.
 - Fresnel reflectivity and second-order light interactions are ignored. This results in some minor stray lights.
 
 ## Build Instructions

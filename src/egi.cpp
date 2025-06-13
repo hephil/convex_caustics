@@ -37,6 +37,7 @@ void print_egi_stats(discrete_egi_t egi)
 
 discrete_egi_t make_convex_egi(uint32_t width, uint32_t height, std::span<float> pixels)
 {
+    const double index_of_refraction = 1.5;
     const double distance = 1.0; // distance of the projected caustic from the lens
     const double pixel_size = 1.0 / std::max(width, height);
     const double caustic_size = pixel_size * width * pixel_size * height;
@@ -70,13 +71,22 @@ discrete_egi_t make_convex_egi(uint32_t width, uint32_t height, std::span<float>
         uint32_t x = i % width;
         uint32_t y = i / width;
 
-        double nx = tl_x + x * pixel_size;
-        double ny = tl_y + y * pixel_size;
-        double nz = distance;
-        double len = std::sqrt(nx * nx + ny * ny + nz * nz);
-        nx /= len;
-        ny /= len;
-        nz /= len;
+        double lx = tl_x + x * pixel_size;
+        double ly = tl_y + y * pixel_size;
+        double lz = distance;
+        double len_l = std::sqrt(lx * lx + ly * ly + lz * lz);
+        lx /= len_l;
+        ly /= len_l;
+        lz /= len_l;
+
+        // normal can be found from incoming vector L, outgoing vector V, and Index of refraction IOR with normalize(V + eta * L)
+        double nx = 0 + index_of_refraction * lx;
+        double ny = 0 + index_of_refraction * ly;
+        double nz = 1 + index_of_refraction * lz;
+        double len_n = std::sqrt(nx * nx + ny * ny + nz * nz);
+        nx /= len_n;
+        ny /= len_n;
+        nz /= len_n;
 
         double area = caustic_size * pixels[i] / std::max(1e-20, (std::abs(nz) * total_brightness));
 
