@@ -27,9 +27,11 @@ Polyhedron compute_caustic(std::span<std::array<double, 3>> normals, std::span<d
 {
     Assert(normals.size() == areas.size(), "Invalid Extended Gaussian Image");
 
-    // std::ofstream logfile("iterations.log");
-    // if (logfile.is_open())
-    //     logfile << "Iteration,Error" << std::endl;
+#ifdef LOGGING_ENABLED
+    std::ofstream logfile(std::string(filename) + ".log");
+    if (logfile.is_open())
+        logfile << "Iteration,Error" << std::endl;
+#endif
 
     // 1) initialize halfspaces with distance 1 from the origin.
     std::vector<double> L(normals.size(), 1.0);
@@ -211,8 +213,10 @@ Polyhedron compute_caustic(std::span<std::array<double, 3>> normals, std::span<d
             std::ofstream out(filename);
             if (out.is_open())
                 out << p;
-            // if (logfile.is_open())
-            //     logfile << std::format("{},{}", k, area_error) << std::endl;
+#ifdef LOGGING_ENABLED
+            if (logfile.is_open())
+                logfile << std::format("{},{}", k, area_error) << std::endl;
+#endif
         }
         std::cout << std::format(
             "Iteration {:>6}, Error: {:>12.4e}, Delta: {:>12.4e}",

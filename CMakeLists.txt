@@ -17,3 +17,7 @@ find_package(CGAL REQUIRED)
 file(GLOB SRC "src/*.inl" "src/*.cpp" "src/*.hpp")
 add_executable(convcaust ${SRC})
 target_link_libraries(convcaust PRIVATE CGAL::CGAL)
+
+if(LOGGING_ENABLED)
+    target_compile_definitions(convcaust PRIVATE LOGGING_ENABLED)
+endif()

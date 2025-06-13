@@ -3,6 +3,7 @@
 #include "little.hpp"
 #include "pgm.hpp"
 
+#include <chrono>
 #include <cstdlib>
 #include <iostream>
 
@@ -52,7 +53,12 @@ int main(int argc, char **argv)
     discrete_egi_t egi = make_convex_egi(img.width, img.height, img.pixels);
 
     // compute lens
+    auto startTime_ = std::chrono::high_resolution_clock::now();
     auto result_mesh = compute_caustic(egi.normals, egi.areas, argv[argc - 1]);
+    auto endTime = std::chrono::high_resolution_clock::now();
+    std::cout
+        << "Lense converged after "
+        << std::chrono::duration<float, std::chrono::seconds::period>(endTime - startTime_).count() << "s" << std::endl;
 
     // write lens
     std::ofstream out(argv[argc - 1]);
